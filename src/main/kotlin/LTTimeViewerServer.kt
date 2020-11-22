@@ -1,10 +1,12 @@
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
+import ws.CommandParser
+import ws.command
 import java.lang.Exception
 import java.net.InetSocketAddress
 
-class LTTimeViewerServer(openPort: Int): WebSocketServer(InetSocketAddress(openPort)) {
+class LTTimeViewerServer(openPort: Int, val commandParser: CommandParser): WebSocketServer(InetSocketAddress(openPort)) {
 
     override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
         if(conn == null) {
@@ -23,7 +25,13 @@ class LTTimeViewerServer(openPort: Int): WebSocketServer(InetSocketAddress(openP
     }
 
     override fun onMessage(conn: WebSocket?, message: String?) {
-        println("--> \"${message}\"")
+        if(conn == null) return
+        if(message?.startsWith("SYSTEM|") != false) return
+        println("RX<< \"${message}\"")
+
+        val result = commandParser.parse(message.substring(7), conn)
+        println("-->  Result: $result")
+        conn.send("SYSTEM|CMD:$result")
     }
 
     override fun onError(conn: WebSocket?, ex: Exception?) {
