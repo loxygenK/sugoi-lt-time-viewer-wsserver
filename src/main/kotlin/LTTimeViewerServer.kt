@@ -34,8 +34,8 @@ class LTTimeViewerServer(openPort: Int, val commandParser: CommandParser): WebSo
         when(result) {
             CommandResult.SUCCESS -> {}
             CommandResult.FAILED -> {}
-            CommandResult.PARSE_ERROR -> {sendText(conn, message, "? PARSE-ERR")}
-            CommandResult.EMPTY -> {sendText(conn, message , "? EMPTY-QUERY")}
+            CommandResult.PARSE_ERROR -> {conn.sendText(message, "? PARSE-ERR")}
+            CommandResult.EMPTY -> {conn.sendText(message, "? EMPTY-QUERY")}
         }
     }
 
@@ -47,8 +47,9 @@ class LTTimeViewerServer(openPort: Int, val commandParser: CommandParser): WebSo
         println("--> Server started!")
     }
 
-    private fun sendText(conn: WebSocket, cmd: String, text: String) {
-        conn.send("SYSTEM|${cmd}>>${text}")
-    }
-
 }
+
+fun WebSocket.sendText(cmd: String, text: String) {
+    this.send("SYSTEM|${cmd}>>${text}")
+}
+
