@@ -3,18 +3,14 @@ package ws
 import org.java_websocket.WebSocket
 
 class CommandParser {
-
-
     val commands: MutableList<Command> = mutableListOf()
 
     fun parse(text: String, conn: WebSocket?): CommandResult {
-        val elements = text.split(" ")
-        if(elements.isEmpty()) return CommandResult.EMPTY
-
+        val commandName = text.split("#")[0]
         return commands
-            .find { it.commandName == elements[0] }
+            .find { it.commandName == commandName }
             .notNullOr { always(CommandResult.PARSE_ERROR) }
-            .execute(elements.subList(1, elements.size), conn)
+            .execute(text, conn)
     }
 
     fun registerCommand(command: Command) = commands.add(command)
