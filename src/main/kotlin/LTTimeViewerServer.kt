@@ -2,7 +2,7 @@ import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
 import ws.CommandParser
-import ws.command
+import ws.CommandResult
 import java.lang.Exception
 import java.net.InetSocketAddress
 
@@ -31,7 +31,12 @@ class LTTimeViewerServer(openPort: Int, val commandParser: CommandParser): WebSo
 
         val result = commandParser.parse(message.substring(7), conn)
         println("-->  Result: $result")
-        conn.send("SYSTEM|CMD:$result")
+        when(result) {
+            CommandResult.SUCCESS -> {}
+            CommandResult.FAILED -> {}
+            CommandResult.PARSE_ERROR -> {sendText(conn, message, "? PARSE-ERR")}
+            CommandResult.EMPTY -> {sendText(conn, message , "? EMPTY-QUERY")}
+        }
     }
 
     override fun onError(conn: WebSocket?, ex: Exception?) {
@@ -41,4 +46,9 @@ class LTTimeViewerServer(openPort: Int, val commandParser: CommandParser): WebSo
     override fun onStart() {
         println("--> Server started!")
     }
+
+    private fun sendText(conn: WebSocket, cmd: String, text: String) {
+        conn.send("SYSTEM|${cmd}>>${text}")
+    }
+
 }
